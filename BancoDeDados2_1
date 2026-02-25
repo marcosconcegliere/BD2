@@ -1,0 +1,50 @@
+/*25/02/2026*/
+
+/*select * from Pagar*/
+
+/**/
+
+select 'Pagar' as tipo,
+sum(Pag_valor) as total_dia, 
+Pag_DataVencimento as vencimento,
+datename(dw, Pag_DataVencimento)
+from Pagar
+where Pag_DataPagto is not null
+
+group by Pag_DataVencimento, 
+datename(dw, Pag_DataVencimento)
+
+union all
+
+select 'receber' as tipo, 
+sum(rec_valor) as total_dia, 
+rec_vencimento as vencimento,
+datename(dw, rec_vencimento)
+from receber
+group by rec_vencimento,
+datename(dw, rec_vencimento)
+order by Pag_DataVencimento
+
+----------------
+
+/*3*/
+
+select isnull(emp_razaosocial, '--') as empresa,
+isnull(pag_fatura, '--') as fatura,
+isnull(pag_valor, '0.0') as valor
+from empresa left join Pagar
+	on FkEmpresa = Idempresa
+
+----------------
+
+select * from banco
+select * from Pagar
+select * from receber
+
+/*4*/
+
+select * from banco
+where IdBanco NOT IN
+(select fkbanco from Pagar where FkBanco is not null)
+and IdBanco not in
+(select fkbanco from receber where FkBanco is not null)
