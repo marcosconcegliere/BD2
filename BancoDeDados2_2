@@ -1,0 +1,38 @@
+/*select * from Pagar
+select * from banco*/
+
+/*5*/
+
+select * into total_backup from
+(select Ban_Descricao,
+ sum(Pag_Valor) as total,
+ sum(1) as qtd
+from
+pagar, banco
+where fkbanco = idbanco
+and pag_datapagto is not null
+group by
+ ban_descricao
+having sum(pag_valor) > 1000)as tt
+
+/*select * from pagar
+select * from empresa*/
+
+/*5*/
+
+select Emp_RazaoSocial, 
+Pag_Fatura, 
+pag_DataVencimento, 
+DATEDIFF(dd, Pag_DataVencimento, getdate()) as dias_atraso
+from empresa, pagar
+where Fkempresa = Idempresa and pag_datapagto is null
+
+/*8*/
+
+select * from pagar 
+where Pag_Valor in
+(select 
+	MIN(pag_valor) as minimo
+from pagar)
+ 
+
