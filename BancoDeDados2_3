@@ -1,0 +1,13 @@
+/*1*/
+
+select idreceber, 
+Emp_RazaoSocial,
+rec_descricao, 
+rec_valor, 
+rec_vencimento,
+DATEDIFF(dd, rec_vencimento, rec_pagto) as atraso
+into #receber_vencidas
+from empresa, receber
+where Idempresa = fkempresa and rec_pagto is not null and DATEDIFF(dd, rec_vencimento, rec_pagto) > 0
+
+select * from #receber_vencidas
