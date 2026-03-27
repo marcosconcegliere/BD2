@@ -1,0 +1,89 @@
+INSERT INTO MovBanco (movban_data,movban_valor,fkbanco)
+SELECT
+    Pag_DataPagto,          
+    Pag_Valor,             
+    FkBanco                 
+FROM Pagar, Banco
+WHERE FkBanco = IdBanco
+  AND Pag_DataPagto IS NOT NULL
+  AND MONTH(Pag_DataPagto) = 2
+  AND YEAR(Pag_DataPagto) = 2019
+
+
+select Emp_RazaoSocial from empresa
+where emp_razaosocial is not null and not exists
+(
+select * from Pagar
+where FkEmpresa = Idempresa
+)
+
+select Ban_Descricao from banco 
+where not exists
+(
+select * from Pagar
+where FkBanco = IdBanco
+)
+AND NOT EXISTS
+(
+select * from receber
+where FkBanco = IdBanco
+)
+ 
+
+select IdBanco, Ban_Descricao, count(*) as qtd_faturas, sum(Pag_Valor) as valor_total from banco, Pagar
+WHERE FkBanco = IdBanco
+group by Ban_Descricao, IdBanco
+order by valor_total
+
+
+alter table pagar add pagar_usuario varchar(80)
+
+select * from Pagar
+
+
+alter table cidade drop column fkantigo 
+
+
+SELECT 
+    b.Ban_Descricao, 
+    p.IdPagar, 
+    p.Pag_Valor
+FROM 
+    banco b 
+JOIN 
+    Pagar p ON b.IdBanco = p.FkBanco
+WHERE 
+    p.Pag_Valor > (
+        SELECT AVG(p2.Pag_Valor) 
+        FROM Pagar p2
+        WHERE p2.FkBanco = b.IdBanco
+    );
+
+
+select e.Idempresa, 
+       e.Emp_RazaoSocial as nome_empresa, 
+       sum (r.rec_valor) as total_recebido,
+       count(r.idreceber) as qtdFaturas,
+       CASE 
+            WHEN sum (r.rec_valor) >= 10000 then 'Cliente Ouro'
+            WHEN sum (r.rec_valor) >= 5000 then 'Cliente Prata'
+            WHEN sum (r.rec_valor) >= 1000 then 'Cliente Bronze'
+            else 'Cliente eventual'
+            end as classificacao
+from empresa e
+JOIN receber r on e.Idempresa = r.fkempresa
+group by e.Idempresa, e.Emp_RazaoSocial
+
+SELECT * FROM receber
+
+SELECT e.Emp_RazaoSocial as nome_empresa,
+       CASE 
+            when exists
+                (select * from pagar p
+                where p.FkEmpresa = e.idempresa
+                and p.Pag_DataVencimento >= DATEADD(year, -1, GETDATE())
+                )THEN 'ATIVO'
+                ELSE 'INATIVO'
+                end as sttaus
+FROM empresa e
+
